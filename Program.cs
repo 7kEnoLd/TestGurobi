@@ -5,6 +5,11 @@ using Google.OrTools.Sat;
 using System.Runtime.InteropServices;
 using System.Diagnostics;
 
+/// <summary>
+/// 不同线之间无法换乘，可以排除
+/// </summary>
+
+
 class BusScheduleOptimization
 {
     static void Main()
@@ -15,6 +20,7 @@ class BusScheduleOptimization
         //int[] timeTransfer = [0, 0, 0, 0]; // 换乘时间
         //int totalTimeInterval = 30; // 总时间
         //int timeLimit = 10000; // 时间限制
+        //double solverTimeLimit = 30.0; // 求解器时间限制
 
         // 大算例
         int[] timeInterval = [10, 10, 15, 25, 20, 11, 15, 10, 14, 17, 24]; // 发车时间间隔
@@ -32,12 +38,12 @@ class BusScheduleOptimization
         int[] timeTransfer = [4, 3, 2, 6, 0, 2, 7, 0, 6, 0, 1, 1, 0, 0, 1, 12, 11, 3]; // 换乘时间
         int totalTimeInterval = 240;
         int timeLimit = 10000;
-        double solverTimeLimit = 20.0;
+        double solverTimeLimit = 30.0;
 
         BusSchedule busSchedule = new(timeInterval, timeRunning, timeTransfer, totalTimeInterval, timeLimit, solverTimeLimit);
 
         Optimization(busSchedule);
-        OptimizationSCIP(busSchedule);
+        // OptimizationSCIP(busSchedule);
         OptimizationCP_SAT(busSchedule);
         OptimizationOrtools(busSchedule);
     }
@@ -315,25 +321,46 @@ class BusScheduleOptimization
                 {
                     for (int m = 0; m < busSchedule.timeRunning[0].Length; m++)
                     {
+                        // situation 1: cannot transfer between two lines
                         if (busSchedule.timeRunning[i][m] == busSchedule.timeLimit || busSchedule.timeRunning[k][m] == busSchedule.timeLimit)
                         {
                             for (int j = 0; j < carCount[i]; j++)
                             {
                                 model.Add(y[i, j, k, l, m] == 0);
                             }
+                            continue;
                         }
+
 
                         for (int j = 0; j < carCount[i]; j++)
                         {
-                            if (j == 0)
+                            // situation 2: cannot transfer between two vehicles
+                            if (i != k)
                             {
-                                model.Add(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] >= -M * (1 - y[i, j, k, l, m]));
-                                model.Add(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] <= busSchedule.timeRunning[i][m] - 1 + M * (1 - y[i, j, k, l, m]));
-                            }
-                            else
-                            {
-                                model.Add(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] >= -M * (1 - y[i, j, k, l, m]));
-                                model.Add(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] <= busSchedule.timeInterval[i] - 1 + M * (1 - y[i, j, k, l, m]));
+                                if (j == 0)
+                                {
+                                    if (!((busSchedule.timeRunning[k][m] + busSchedule.timeTransfer[m] + l * busSchedule.timeInterval[k] > (j + 1) * busSchedule.timeInterval[i] - 1 + busSchedule.timeRunning[i][m]) || (busSchedule.timeRunning[k][m] + busSchedule.timeTransfer[m] + (l + 1) * busSchedule.timeInterval[k] - 1 + busSchedule.timeRunning[i][m] - 1 < j * busSchedule.timeInterval[i] + busSchedule.timeRunning[i][m])))
+                                    {
+                                        model.Add(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] >= -M * (1 - y[i, j, k, l, m]));
+                                        model.Add(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] <= busSchedule.timeRunning[i][m] - 1 + M * (1 - y[i, j, k, l, m]));
+                                    }
+                                    else
+                                    {
+                                        model.Add(y[i, j, k, l, m] == 0);
+                                    }
+                                }
+                                else
+                                {
+                                    if (!((busSchedule.timeRunning[k][m] + busSchedule.timeTransfer[m] + l * busSchedule.timeInterval[k] > (j + 1) * busSchedule.timeInterval[i] - 1 + busSchedule.timeRunning[i][m]) || (busSchedule.timeRunning[k][m] + busSchedule.timeTransfer[m] + (l + 1) * busSchedule.timeInterval[k] - 1 + busSchedule.timeInterval[i] - 1 < j * busSchedule.timeInterval[i] + busSchedule.timeRunning[i][m])))
+                                    {
+                                        model.Add(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] >= -M * (1 - y[i, j, k, l, m]));
+                                        model.Add(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] <= busSchedule.timeInterval[i] - 1 + M * (1 - y[i, j, k, l, m]));
+                                    }
+                                    else
+                                    {
+                                        model.Add(y[i, j, k, l, m] == 0);
+                                    }
+                                }
                             }
                         }
                     }
