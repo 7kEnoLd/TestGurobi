@@ -2,8 +2,8 @@
 using Gurobi;
 using Google.OrTools.LinearSolver;
 using Google.OrTools.Sat;
-using System.Runtime.InteropServices;
 using System.Diagnostics;
+using System.Runtime.ExceptionServices;
 
 /// <summary>
 /// 不同线之间无法换乘，可以排除
@@ -15,105 +15,103 @@ class BusScheduleOptimization
     static void Main()
     {
         // 小算例
-        int[] timeInterval = [10, 10, 10, 20]; // 发车时间间隔
-        int[][] timeRunning = [[5, 12, 10000, 10000], [10000, 10000, 10, 4], [6, 10000, 10000, 9], [10000, 5, 13, 10000]]; // 从始发站到换乘站的行驶时间
-        int[] timeTransfer = [0, 0, 0, 0]; // 换乘时间
-        int totalTimeInterval = 30; // 总时间
-        int timeLimit = 10000; // 时间限制
-        double solverTimeLimit = 30.0; // 求解器时间限制
+        //int[] timeInterval = [10, 10, 10, 20]; // 发车时间间隔
+        //int[][] timeRunning = [[5, 12, 10000, 10000], [10000, 10000, 10, 4], [6, 10000, 10000, 9], [10000, 5, 13, 10000]]; // 从始发站到换乘站的行驶时间
+        //int[] timeTransfer = [0, 0, 0, 0]; // 换乘时间
+        //int totalTimeInterval = 30; // 总时间
+        // double[,,] transferPassengerFlow = new double[timeInterval.Length, timeInterval.Length, timeRunning[0].Length];
+        //transferPassengerFlow[0, 2, 0] = 12;//S1 I-III
+        //transferPassengerFlow[2, 0, 0] = 8;//S1  III-I
+        //transferPassengerFlow[0, 3, 1] = 8;//S2  I-IV
+        //transferPassengerFlow[3, 0, 1] = 8;//S2  IV-I
+        //transferPassengerFlow[1, 3, 2] = 10;//S3 II-IV
+        //transferPassengerFlow[3, 1, 2] = 8;//S3  IV-II
+        //transferPassengerFlow[1, 2, 3] = 7;//S4  II-III
+        //transferPassengerFlow[2, 1, 3] = 11;//S4 III-II
+        //int timeLimit = 10000; // 时间限制
+        //double solverTimeLimit = 30.0; // 求解器时间限制
 
         // 大算例
-        //int[] timeInterval = [10, 10, 15, 25, 20, 11, 15, 10, 14, 17, 24]; // 发车时间间隔
-        //int[][] timeRunning = [[10000, 10000, 19, 24, 10000, 32, 10000, 36, 10000, 45, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
-        //                      [10000, 10000, 42, 37, 10000, 29, 10000, 25, 23, 10000, 1000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
-        //                      [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 18, 42, 58, 10000, 10000, 10000, 10000, 51],
-        //                      [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 90, 72, 10000, 14, 26, 22, 10000, 49, 10000],
-        //                      [10000, 17, 22, 10000, 34, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
-        //                      [37, 17, 26, 31, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
-        //                      [10000, 10000, 10000, 10000, 61, 53, 51, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
-        //                      [10000, 10000, 10000, 10000, 10000, 10000, 55, 10000, 48, 10000, 21, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
-        //                      [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 16, 20, 32, 10000, 10000],
-        //                      [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 20, 10000, 10000],
-        //                      [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 20, 28, 10000, 10000, 10000, 10000, 10000]];
-        //int[] timeTransfer = [4, 3, 2, 6, 0, 2, 7, 0, 6, 0, 1, 1, 0, 0, 1, 12, 11, 3]; // 换乘时间
-        //int totalTimeInterval = 240;
-        //int timeLimit = 10000;
-        //double solverTimeLimit = 600.0;
-
-        BusSchedule busSchedule = new(timeInterval, timeRunning, timeTransfer, totalTimeInterval, timeLimit, solverTimeLimit);
-
+        int[] timeInterval = [10, 10, 15, 25, 20, 11, 15, 10, 14, 17, 24]; // 发车时间间隔
+        int[][] timeRunning = [[10000, 10000, 19, 24, 10000, 32, 10000, 36, 10000, 45, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
+                              [10000, 10000, 42, 37, 10000, 29, 10000, 25, 23, 10000, 1000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
+                              [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 18, 42, 58, 10000, 10000, 10000, 10000, 51],
+                              [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 90, 72, 10000, 14, 26, 22, 10000, 49, 10000],
+                              [10000, 17, 22, 10000, 34, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
+                              [37, 17, 26, 31, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
+                              [10000, 10000, 10000, 10000, 61, 53, 51, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
+                              [10000, 10000, 10000, 10000, 10000, 10000, 55, 10000, 48, 10000, 21, 10000, 10000, 10000, 10000, 10000, 10000, 10000],
+                              [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 16, 20, 32, 10000, 10000],
+                              [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 20, 10000, 10000],
+                              [10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 10000, 20, 28, 10000, 10000, 10000, 10000, 10000]];
+        int[] timeTransfer = [4, 3, 2, 6, 0, 2, 7, 0, 6, 0, 1, 1, 0, 0, 1, 12, 11, 3]; // 换乘时间
+        int totalTimeInterval = 240;
         // 换乘客流transferPassengerFlow[i,k,m],m站点i线路换乘j线路
-        double[,,] transferPassengerFlow = new double[busSchedule.timeInterval.Length, busSchedule.timeInterval.Length, busSchedule.timeRunning[0].Length];
+        double[,,] transferPassengerFlow = new double[timeInterval.Length, timeInterval.Length, timeRunning[0].Length];
+        transferPassengerFlow[5, 4, 0] = 1.2;//S1 B2-B1
+        transferPassengerFlow[5, 4, 1] = 0.4;//S2 B2-B1
+        transferPassengerFlow[4, 5, 1] = 0.4;//S2 B1-B2
+        transferPassengerFlow[5, 4, 2] = 0.4;//S3 B2-B1
+        transferPassengerFlow[4, 5, 2] = 0.4;//S3 B1-B2
+        transferPassengerFlow[0, 4, 2] = 0.4;//S3 A1-B1
+        transferPassengerFlow[0, 5, 2] = 0.4;//S3 A1-B2
+        transferPassengerFlow[4, 0, 2] = 0.8;//S3 B1-A1
+        transferPassengerFlow[4, 1, 2] = 0.8;//S3 B1-A2
+        transferPassengerFlow[5, 0, 2] = 0.8;//S3 B2-A1
+        transferPassengerFlow[5, 1, 2] = 0.8;//S3 B2-A2
+        transferPassengerFlow[1, 5, 3] = 0.8;//S4 A2-B2
+        transferPassengerFlow[6, 4, 4] = 0.4;//S5 B3-B1
+        transferPassengerFlow[6, 0, 5] = 0.4;//S6 B3-A1
+        transferPassengerFlow[6, 1, 5] = 0.8;//S6 B3-A2
+        transferPassengerFlow[7, 6, 6] = 0.4;//S7 B4-B3
+        transferPassengerFlow[1, 0, 7] = 6;//S8 A2-A1
+        transferPassengerFlow[1, 7, 8] = 0.4;//S9 A2-B4
+        transferPassengerFlow[0, 2, 9] = 12;//S10 A1-A3
+        transferPassengerFlow[7, 2, 10] = 0.4;//S11 B4-A3
+        transferPassengerFlow[3, 7, 10] = 1;//S11 A4-B4
+        transferPassengerFlow[2, 10, 11] = 0.4;//S12 A3-B7
+        transferPassengerFlow[10, 2, 11] = 0.8;//S12 B7-A3
+        transferPassengerFlow[10, 9, 12] = 1.2;//S13 B7-B6
+        transferPassengerFlow[10, 3, 12] = 1.6; //S13 B7-A4
+        transferPassengerFlow[2, 9, 12] = 0.8;//S13 A3-B6
+        transferPassengerFlow[8, 3, 13] = 0.4;//S14 B5-A4
+        transferPassengerFlow[3, 8, 14] = 1.2;//S15 A4-B5
+        transferPassengerFlow[8, 9, 15] = 0.4;//S16 B5-B6
+        transferPassengerFlow[3, 10, 16] = 2.4;//S17 A4-B7
+        transferPassengerFlow[2, 8, 17] = 0.8;//S18 A3-B5
+        int timeLimit = 10000;
+        double solverTimeLimit = 600.0;
 
-        // 大案例
-        //transferPassengerFlow[5, 4, 0] = 1.2;//S1 B2-B1
-        //transferPassengerFlow[5, 4, 1] = 0.4;//S2 B2-B1
-        //transferPassengerFlow[4, 5, 1] = 0.4;//S2 B1-B2
-        //transferPassengerFlow[5, 4, 2] = 0.4;//S3 B2-B1
-        //transferPassengerFlow[4, 5, 2] = 0.4;//S3 B1-B2
-        //transferPassengerFlow[0, 4, 2] = 0.4;//S3 A1-B1
-        //transferPassengerFlow[0, 5, 2] = 0.4;//S3 A1-B2
-        //transferPassengerFlow[4, 0, 2] = 0.8;//S3 B1-A1
-        //transferPassengerFlow[4, 1, 2] = 0.8;//S3 B1-A2
-        //transferPassengerFlow[5, 0, 2] = 0.8;//S3 B2-A1
-        //transferPassengerFlow[5, 1, 2] = 0.8;//S3 B2-A2
-        //transferPassengerFlow[1, 5, 3] = 0.8;//S4 A2-B2
-        //transferPassengerFlow[6, 4, 4] = 0.4;//S5 B3-B1
-        //transferPassengerFlow[6, 0, 5] = 0.4;//S6 B3-A1
-        //transferPassengerFlow[6, 1, 5] = 0.8;//S6 B3-A2
-        //transferPassengerFlow[7, 6, 6] = 0.4;//S7 B4-B3
-        //transferPassengerFlow[1, 0, 7] = 6;//S8 A2-A1
-        //transferPassengerFlow[1, 7, 8] = 0.4;//S9 A2-B4
-        //transferPassengerFlow[0, 2, 9] = 12;//S10 A1-A3
-        //transferPassengerFlow[7, 2, 10] = 0.4;//S11 B4-A3
-        //transferPassengerFlow[3, 7, 10] = 1;//S11 A4-B4
-        //transferPassengerFlow[2, 10, 11] = 0.4;//S12 A3-B7
-        //transferPassengerFlow[10, 2, 11] = 0.8;//S12 B7-A3
-        //transferPassengerFlow[10, 9, 12] = 1.2;//S13 B7-B6
-        //transferPassengerFlow[10, 3, 12] = 1.6; //S13 B7-A4
-        //transferPassengerFlow[2, 9, 12] = 0.8;//S13 A3-B6
-        //transferPassengerFlow[8, 3, 13] = 0.4;//S14 B5-A4
-        //transferPassengerFlow[3, 8, 14] = 1.2;//S15 A4-B5
-        //transferPassengerFlow[8, 9, 15] = 0.4;//S16 B5-B6
-        //transferPassengerFlow[3, 10, 16] = 2.4;//S17 A4-B7
-        //transferPassengerFlow[2, 8, 17] = 0.8;//S18 A3-B5
-        //for (int i = 0; i < busSchedule.timeInterval.Length; i++)
-        //{
-        //    for (int j = 0; j < busSchedule.timeInterval.Length; j++)
-        //    {
-        //        for (int k = 0; k < busSchedule.timeRunning[0].Length; k++)
-        //        {
-        //            transferPassengerFlow[i, j, k] = 10 * transferPassengerFlow[i, j, k];
-        //        }
-        //    }
-        //}
+        BusSchedule busSchedule = new(timeInterval, timeRunning, timeTransfer, totalTimeInterval, transferPassengerFlow, timeLimit, solverTimeLimit);
+
+
 
         // 小案例
-        transferPassengerFlow[0, 2, 0] = 12;//S1 I-III
-        transferPassengerFlow[2, 0, 0] = 8;//S1  III-I
-        transferPassengerFlow[0, 3, 1] = 8;//S2  I-IV
-        transferPassengerFlow[3, 0, 1] = 8;//S2  IV-I
-        transferPassengerFlow[1, 3, 2] = 10;//S3 II-IV
-        transferPassengerFlow[3, 1, 2] = 8;//S3  IV-II
-        transferPassengerFlow[1, 2, 3] = 7;//S4  II-III
-        transferPassengerFlow[2, 1, 3] = 11;//S4 III-II
+        //transferPassengerFlow[0, 2, 0] = 12;//S1 I-III
+        //transferPassengerFlow[2, 0, 0] = 8;//S1  III-I
+        //transferPassengerFlow[0, 3, 1] = 8;//S2  I-IV
+        //transferPassengerFlow[3, 0, 1] = 8;//S2  IV-I
+        //transferPassengerFlow[1, 3, 2] = 10;//S3 II-IV
+        //transferPassengerFlow[3, 1, 2] = 8;//S3  IV-II
+        //transferPassengerFlow[1, 2, 3] = 7;//S4  II-III
+        //transferPassengerFlow[2, 1, 3] = 11;//S4 III-II
 
         // Model1
-        // Optimization(busSchedule);
-        // OptimizationSCIP(busSchedule);
-        OptimizationCP_SAT(busSchedule);
-        // OptimizationOrtools(busSchedule);
+        OptimizationGurobi_Model1(busSchedule);
+        // OptimizationSCIP_Model1(busSchedule);
+        OptimizationCP_SAT_Model1(busSchedule);
+        // OptimizationOrtools_Model1(busSchedule);
 
         // Model2
-        double p = OptimizationCP_SAT_Model2(busSchedule, transferPassengerFlow);
+        double p = OptimizationCP_SAT_Model2(busSchedule);
 
         // Model3
-        OptimizationCP_SAT_Model3(busSchedule, transferPassengerFlow, p);
-        OptimizationGurobi_Model3(busSchedule, transferPassengerFlow, p);
+        OptimizationCP_SAT_Model3(busSchedule, p);
+        OptimizationGurobi_Model3(busSchedule, p);
 
         // Model4
-        OptimizationCP_SAT_Model4(busSchedule, transferPassengerFlow, p);
-        OptimizationGurobi_Model4(busSchedule, transferPassengerFlow, p);
+        OptimizationCP_SAT_Model4(busSchedule, p);
+        OptimizationGurobi_Model4(busSchedule, p);
 
     }
 
@@ -206,7 +204,7 @@ class BusScheduleOptimization
     }
 
 
-    private static void OptimizationOrtools(BusSchedule busSchedule)
+    private static void OptimizationOrtools_Model1(BusSchedule busSchedule)
     {
         // Create the solver
         Solver solver = Solver.CreateSolver("CBC_MIXED_INTEGER_PROGRAMMING");
@@ -331,7 +329,7 @@ class BusScheduleOptimization
         }
     }
 
-    private static void OptimizationCP_SAT(BusSchedule busSchedule)
+    private static void OptimizationCP_SAT_Model1(BusSchedule busSchedule)
     {
         // Create the CP-SAT model
         CpModel model = new CpModel();
@@ -474,7 +472,7 @@ class BusScheduleOptimization
         }
     }
 
-    private static void Optimization(BusSchedule busSchedule)
+    private static void OptimizationGurobi_Model1(BusSchedule busSchedule)
     {
         try
         {
@@ -584,7 +582,7 @@ class BusScheduleOptimization
         }
     }
 
-    private static void OptimizationSCIP(BusSchedule busSchedule)
+    private static void OptimizationSCIP_Model1(BusSchedule busSchedule)
     {
         // 替换 solver 为 SCIP
         Solver solver = Solver.CreateSolver("SCIP_MIXED_INTEGER_PROGRAMMING");
@@ -722,8 +720,21 @@ class BusScheduleOptimization
 
     }
 
-    private static double OptimizationCP_SAT_Model2(BusSchedule busSchedule, double[,,] transferPassengerFlow)
+    private static double OptimizationCP_SAT_Model2(BusSchedule busSchedule)
     {
+        double[,,] transferPassengerFlow = new double[busSchedule.timeInterval.Length, busSchedule.timeInterval.Length, busSchedule.timeRunning[0].Length];
+        // Parse integer
+        for (int i = 0; i < busSchedule.timeInterval.Length; i++)
+        {
+            for (int j = 0; j < busSchedule.timeInterval.Length; j++)
+            {
+                for (int k = 0; k < busSchedule.timeRunning[0].Length; k++)
+                {
+                    transferPassengerFlow[i, j, k] = busSchedule.transferPassengerFlow[i, j, k];
+                }
+            }
+        }
+
         // Create the CP-SAT model
         CpModel model = new CpModel();
 
@@ -836,7 +847,7 @@ class BusScheduleOptimization
         }
 
         // Define the objective function (maximization)
-        // int scaleFactor = 10;
+        int scaleFactor = 10;
         var objective = Google.OrTools.Sat.LinearExpr.Sum(
             from i in Enumerable.Range(0, busSchedule.timeInterval.Length)
             from k in Enumerable.Range(0, busSchedule.timeInterval.Length)
@@ -847,7 +858,7 @@ class BusScheduleOptimization
                 where i != k
                 select y[i, j, k, l, m]
             )
-            select sumJl * (int)(transferPassengerFlow[k, i, m]) // * scaleFactor)
+            select sumJl * (int)(transferPassengerFlow[k, i, m] * scaleFactor)
         );
 
         model.Maximize(objective);
@@ -880,8 +891,21 @@ class BusScheduleOptimization
         return solver.ObjectiveValue;
     }
 
-    private static void OptimizationCP_SAT_Model3(BusSchedule busSchedule, double[,,] transferPassengerFlow, double p)
+    private static void OptimizationCP_SAT_Model3(BusSchedule busSchedule, double p)
     {
+        double[,,] transferPassengerFlow = new double[busSchedule.timeInterval.Length, busSchedule.timeInterval.Length, busSchedule.timeRunning[0].Length];
+        // Parse integer
+        for (int i = 0; i < busSchedule.timeInterval.Length; i++)
+        {
+            for (int j = 0; j < busSchedule.timeInterval.Length; j++)
+            {
+                for (int k = 0; k < busSchedule.timeRunning[0].Length; k++)
+                {
+                    transferPassengerFlow[i, j, k] = 10 * busSchedule.transferPassengerFlow[i, j, k];
+                }
+            }
+        }
+
         // Create the CP-SAT model
         CpModel model = new CpModel();
 
@@ -923,19 +947,20 @@ class BusScheduleOptimization
                     {
                         for (int m = 0; m < busSchedule.timeRunning[0].Length; m++)
                         {
-                            y[i, j, k, l, m] = model.NewBoolVar($"y{i}_{j}_{k}_{l}_{m}");
-                            w[i, j, k, l, m] = model.NewIntVar(-2 * busSchedule.totalTimeInterval, 2 * busSchedule.totalTimeInterval, $"w{i}_{j}_{k}_{l}_{m}");
-
-                            u[i, j, k, l, m] = model.NewIntVar(-2 * busSchedule.totalTimeInterval, 2 * busSchedule.totalTimeInterval, $"u{i}_{j}_{k}_{l}_{m}");
-
                             if (i != k)
                             {
+                                y[i, j, k, l, m] = model.NewBoolVar($"y{i}_{j}_{k}_{l}_{m}");
+                                w[i, j, k, l, m] = model.NewIntVar(0, busSchedule.totalTimeInterval, $"w{i}_{j}_{k}_{l}_{m}");
+                                u[i, j, k, l, m] = model.NewIntVar(0, busSchedule.totalTimeInterval, $"u{i}_{j}_{k}_{l}_{m}");
                                 model.Add(u[i, j, k, l, m] == w[i, j, k, l, m]).OnlyEnforceIf((ILiteral)y[i, j, k, l, m]);
                                 model.Add(u[i, j, k, l, m] == 0).OnlyEnforceIf(((ILiteral)y[i, j, k, l, m]).Not());
                             }
                             else
                             {
-                                model.Add(u[i, j, k, l, m] == 0);
+                                y[i, j, k, l, m] = model.NewBoolVar($"y{i}_{j}_{k}_{l}_{m}");
+                                w[i, j, k, l, m] = model.NewIntVar(0, 0, $"w{i}_{j}_{k}_{l}_{m}");
+                                u[i, j, k, l, m] = model.NewIntVar(0, 0, $"u{i}_{j}_{k}_{l}_{m}");
+                                model.Add(y[i, j, k, l, m] == 0);
                             }
                         }
                     }
@@ -961,8 +986,7 @@ class BusScheduleOptimization
                             }
                             continue;
                         }
-
-
+                        model.AddLinearConstraint(Google.OrTools.Sat.LinearExpr.Sum(Enumerable.Range(0, carCount[i]).Select(j => y[i, j, k, l, m])), 0, 1);
                         for (int j = 0; j < carCount[i]; j++)
                         {
                             // situation 2: cannot transfer between two vehicles
@@ -1064,10 +1088,23 @@ class BusScheduleOptimization
         }
     }
 
-    private static void OptimizationGurobi_Model3(BusSchedule busSchedule, double[,,] transferPassengerFlow, double p)
+    private static void OptimizationGurobi_Model3(BusSchedule busSchedule, double p)
     {
         try
         {
+            double[,,] transferPassengerFlow = new double[busSchedule.timeInterval.Length, busSchedule.timeInterval.Length, busSchedule.timeRunning[0].Length];
+            // Parse integer
+            for (int i = 0; i < busSchedule.timeInterval.Length; i++)
+            {
+                for (int j = 0; j < busSchedule.timeInterval.Length; j++)
+                {
+                    for (int k = 0; k < busSchedule.timeRunning[0].Length; k++)
+                    {
+                        transferPassengerFlow[i, j, k] = busSchedule.transferPassengerFlow[i, j, k];
+                    }
+                }
+            }
+
             GRBEnv env = new();
             GRBModel model = new(env);
 
@@ -1100,16 +1137,17 @@ class BusScheduleOptimization
                         {
                             for (int m = 0; m < busSchedule.timeRunning[0].Length; m++)
                             {
-                                y[i, j, k, l, m] = model.AddVar(0.0, 1.0, 0.0, GRB.BINARY, "y" + i + j + k + l + m);
-                                w[i, j, k, l, m] = model.AddVar(-busSchedule.totalTimeInterval, busSchedule.totalTimeInterval, 0.0, GRB.INTEGER, "w" + i + j + k + l + m);
-
                                 if (i != k)
                                 {
+                                    y[i, j, k, l, m] = model.AddVar(0.0, 1.0, 0.0, GRB.BINARY, "y" + i + j + k + l + m);
+                                    w[i, j, k, l, m] = model.AddVar(0, busSchedule.totalTimeInterval, 0.0, GRB.INTEGER, "w" + i + j + k + l + m);
                                     u[i, j, k, l, m] = model.AddVar(0, busSchedule.totalTimeInterval, transferPassengerFlow[k, i, m], GRB.INTEGER, "u" + i + j + k + l + m);
                                     model.AddQConstr(u[i, j, k, l, m] == w[i, j, k, l, m] * y[i, j, k, l, m], "u" + i + j + k + l + m);
                                 }
                                 else
                                 {
+                                    y[i, j, k, l, m] = model.AddVar(0.0, 0.0, 0.0, GRB.BINARY, "y" + i + j + k + l + m);
+                                    w[i, j, k, l, m] = model.AddVar(0.0, 0.0, 0.0, GRB.INTEGER, "w" + i + j + k + l + m);
                                     u[i, j, k, l, m] = model.AddVar(0.0, 0.0, 0.0, GRB.INTEGER, "u" + i + j + k + l + m);
                                 }
                             }
@@ -1135,6 +1173,7 @@ class BusScheduleOptimization
                                 continue;
                             }
 
+                            GRBLinExpr expr = new GRBLinExpr();
                             for (int j = 0; j < carCount[i]; j++)
                             {
                                 if (i != k)
@@ -1147,8 +1186,10 @@ class BusScheduleOptimization
                                             model.AddConstr(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] >= -M * (1 - y[i, j, k, l, m]), "");
                                             model.AddConstr(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] <= busSchedule.timeRunning[i][m] + M * (1 - y[i, j, k, l, m]), "");
 
-                                            model.AddConstr(w[i, j, k, l, m] <= x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] + M * (1 - y[i, j, k, l, m]), "");
-                                            model.AddConstr(w[i, j, k, l, m] >= x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] - M * (1 - y[i, j, k, l, m]), "");
+                                            model.AddQConstr(y[i, j, k, l, m] * (w[i, j, k, l, m] - (x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m])) == 0, "");
+
+                                            //model.AddConstr(w[i, j, k, l, m] <= x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] + M * (1 - y[i, j, k, l, m]), "");
+                                            //model.AddConstr(w[i, j, k, l, m] >= x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] - M * (1 - y[i, j, k, l, m]), "");
                                         }
                                         else
                                         {
@@ -1163,16 +1204,24 @@ class BusScheduleOptimization
                                             model.AddConstr(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] >= -M * (1 - y[i, j, k, l, m]), "");
                                             model.AddConstr(x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] <= busSchedule.timeInterval[i] - 1 + M * (1 - y[i, j, k, l, m]), "");
 
-                                            model.AddConstr(w[i, j, k, l, m] <= x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] + M * (1 - y[i, j, k, l, m]), "");
-                                            model.AddConstr(w[i, j, k, l, m] >= x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] - M * (1 - y[i, j, k, l, m]), "");
+                                            model.AddQConstr(y[i, j, k, l, m] * (w[i, j, k, l, m] - (x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m])) == 0, "");
+
+                                            //model.AddConstr(w[i, j, k, l, m] <= x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] + M * (1 - y[i, j, k, l, m]), "");
+                                            //model.AddConstr(w[i, j, k, l, m] >= x[i, j] + busSchedule.timeRunning[i][m] - x[k, l] - busSchedule.timeRunning[k][m] - busSchedule.timeTransfer[m] - M * (1 - y[i, j, k, l, m]), "");
                                         }
                                         else
                                         {
                                             model.AddConstr(y[i, j, k, l, m] == 0, "");
                                         }
                                     }
+
+
                                 }
+
+                                expr.AddTerm(1, y[i, j, k, l, m]);
                             }
+
+                            model.AddConstr(expr <= 1, "");
                         }
                     }
                 }
@@ -1208,8 +1257,7 @@ class BusScheduleOptimization
                 }
             }
             // Add the objective expression as a constraint or objective
-            model.AddConstr(objectiveExpr == p, "ObjectiveConstraint");
-
+            model.AddConstr(objectiveExpr == p / 10, "ObjectiveConstraint");
 
             // Set time limit
             model.Parameters.TimeLimit = busSchedule.solverTimeLimit;
@@ -1264,10 +1312,23 @@ class BusScheduleOptimization
         }
     }
 
-    private static void OptimizationGurobi_Model4(BusSchedule busSchedule, double[,,] transferPassengerFlow, double p)
+    private static void OptimizationGurobi_Model4(BusSchedule busSchedule, double p)
     {
         try
         {
+            double[,,] transferPassengerFlow = new double[busSchedule.timeInterval.Length, busSchedule.timeInterval.Length, busSchedule.timeRunning[0].Length];
+            // Parse integer
+            for (int i = 0; i < busSchedule.timeInterval.Length; i++)
+            {
+                for (int j = 0; j < busSchedule.timeInterval.Length; j++)
+                {
+                    for (int k = 0; k < busSchedule.timeRunning[0].Length; k++)
+                    {
+                        transferPassengerFlow[i, j, k] = busSchedule.transferPassengerFlow[i, j, k];
+                    }
+                }
+            }
+
             GRBEnv env = new();
             GRBModel model = new(env);
 
@@ -1325,6 +1386,7 @@ class BusScheduleOptimization
                                 continue;
                             }
 
+                            GRBLinExpr expr = new GRBLinExpr();
                             for (int j = 0; j < carCount[i]; j++)
                             {
                                 if (i != k)
@@ -1361,8 +1423,13 @@ class BusScheduleOptimization
                                             model.AddConstr(y[i, j, k, l, m] == 0, "");
                                         }
                                     }
+
+
                                 }
+                                expr.AddTerm(1, y[i, j, k, l, m]);
                             }
+
+                            model.AddConstr(expr <= 1, "");
                         }
                     }
                 }
@@ -1399,7 +1466,7 @@ class BusScheduleOptimization
                 }
             }
             // Add the objective expression as a constraint or objective
-            model.AddConstr(objectiveExpr == p, "ObjectiveConstraint");
+            model.AddConstr(objectiveExpr == p / 10, "ObjectiveConstraint");
 
 
             // Set time limit
@@ -1407,43 +1474,43 @@ class BusScheduleOptimization
             model.Optimize();
 
             // Output
-            if (model.Status == GRB.Status.OPTIMAL)
-            {
-                Console.WriteLine("Optimal Solution Found");
-                Console.WriteLine($"Objective Value = {model.ObjVal}");
-                // Print the value of x[i, j]
-                for (int i = 0; i < busSchedule.timeInterval.Length; i++)
-                {
-                    for (int j = 0; j < carCount[i]; j++)
-                    {
-                        // Get the value of x[i, j] and print it
-                        double xValue = x[i, j].X;
-                        Console.WriteLine($"x[{i}, {j}] = {xValue}");
-                    }
-                }
-                for (int i = 0; i < busSchedule.timeInterval.Length; i++)
-                {
-                    for (int j = 0; j < carCount[i]; j++)
-                    {
-                        for (int k = 0; k < busSchedule.timeInterval.Length; k++)
-                        {
-                            for (int l = 0; l < carCount[k]; l++)
-                            {
-                                for (int m = 0; m < busSchedule.timeRunning[0].Length; m++)
-                                {
-                                    // Get the value of w[i, j, k, l, m] and print it
-                                    double wValue = w[i, j, k, l, m].X;
-                                    Console.WriteLine($"w[{i}, {j}, {k}, {l}, {m}] = {wValue}");
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            else
-            {
-                Console.WriteLine("No Optimal Solution Found");
-            }
+            //if (model.Status == GRB.Status.OPTIMAL)
+            //{
+            //    Console.WriteLine("Optimal Solution Found");
+            //    Console.WriteLine($"Objective Value = {model.ObjVal}");
+            //    // Print the value of x[i, j]
+            //    for (int i = 0; i < busSchedule.timeInterval.Length; i++)
+            //    {
+            //        for (int j = 0; j < carCount[i]; j++)
+            //        {
+            //            // Get the value of x[i, j] and print it
+            //            double xValue = x[i, j].X;
+            //            Console.WriteLine($"x[{i}, {j}] = {xValue}");
+            //        }
+            //    }
+            //    for (int i = 0; i < busSchedule.timeInterval.Length; i++)
+            //    {
+            //        for (int j = 0; j < carCount[i]; j++)
+            //        {
+            //            for (int k = 0; k < busSchedule.timeInterval.Length; k++)
+            //            {
+            //                for (int l = 0; l < carCount[k]; l++)
+            //                {
+            //                    for (int m = 0; m < busSchedule.timeRunning[0].Length; m++)
+            //                    {
+            //                        // Get the value of w[i, j, k, l, m] and print it
+            //                        double wValue = w[i, j, k, l, m].X;
+            //                        Console.WriteLine($"w[{i}, {j}, {k}, {l}, {m}] = {wValue}");
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
+            //else
+            //{
+            //    Console.WriteLine("No Optimal Solution Found");
+            //}
 
             model.Dispose();
             env.Dispose();
@@ -1455,8 +1522,21 @@ class BusScheduleOptimization
         }
     }
 
-    private static void OptimizationCP_SAT_Model4(BusSchedule busSchedule, double[,,] transferPassengerFlow, double p)
+    private static void OptimizationCP_SAT_Model4(BusSchedule busSchedule, double p)
     {
+        double[,,] transferPassengerFlow = new double[busSchedule.timeInterval.Length, busSchedule.timeInterval.Length, busSchedule.timeRunning[0].Length];
+        // Parse integer
+        for (int i = 0; i < busSchedule.timeInterval.Length; i++)
+        {
+            for (int j = 0; j < busSchedule.timeInterval.Length; j++)
+            {
+                for (int k = 0; k < busSchedule.timeRunning[0].Length; k++)
+                {
+                    transferPassengerFlow[i, j, k] = 10 * busSchedule.transferPassengerFlow[i, j, k];
+                }
+            }
+        }
+
         // Create the CP-SAT model
         CpModel model = new CpModel();
 
@@ -1530,6 +1610,7 @@ class BusScheduleOptimization
                             continue;
                         }
 
+                        model.AddLinearConstraint(Google.OrTools.Sat.LinearExpr.Sum(Enumerable.Range(0, carCount[i]).Select(j => y[i, j, k, l, m])), 0, 1);
 
                         for (int j = 0; j < carCount[i]; j++)
                         {
@@ -1629,17 +1710,18 @@ class BusSchedule
     public int[][] timeRunning;
     public int[] timeTransfer;
     public int totalTimeInterval;
+    public double[,,] transferPassengerFlow;
     public int timeLimit;
     public double solverTimeLimit;
 
-    public BusSchedule(int[] timeInterval, int[][] timeRunning, int[] timeTransfer, int totalTimeInterval, int timeLimit, double solverTimeLimit)
+    public BusSchedule(int[] timeInterval, int[][] timeRunning, int[] timeTransfer, int totalTimeInterval, double[,,] transferPassengerFlow, int timeLimit, double solverTimeLimit)
     {
         this.timeInterval = timeInterval;
         this.timeRunning = timeRunning;
         this.timeTransfer = timeTransfer;
         this.totalTimeInterval = totalTimeInterval;
+        this.transferPassengerFlow = transferPassengerFlow;
         this.timeLimit = timeLimit;
         this.solverTimeLimit = solverTimeLimit;
     }
 }
-
