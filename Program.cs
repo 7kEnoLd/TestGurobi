@@ -112,7 +112,6 @@ class BusScheduleOptimization
         // Model4
         OptimizationCP_SAT_Model4(busSchedule, p);
         OptimizationGurobi_Model4(busSchedule, p);
-
     }
 
     private static void RunScipSolver(string scipPath, string modelPath, double timeLimit)
@@ -395,8 +394,7 @@ class BusScheduleOptimization
                             }
                             continue;
                         }
-
-
+                        model.AddLinearConstraint(Google.OrTools.Sat.LinearExpr.Sum(Enumerable.Range(0, carCount[i]).Select(j => y[i, j, k, l, m])), 0, 1);
                         for (int j = 0; j < carCount[i]; j++)
                         {
                             // situation 2: cannot transfer between two vehicles
@@ -568,13 +566,13 @@ class BusScheduleOptimization
             model.Optimize();
 
             // 输出x变量的值
-            for (int i = 0; i < busSchedule.timeInterval.Length; i++)
-            {
-                for (int j = 0; j < carCount[i]; j++)
-                {
-                    Console.WriteLine($"x{i}{j} = {x[i, j].X}");
-                }
-            }
+            //for (int i = 0; i < busSchedule.timeInterval.Length; i++)
+            //{
+            //    for (int j = 0; j < carCount[i]; j++)
+            //    {
+            //        Console.WriteLine($"x{i}{j} = {x[i, j].X}");
+            //    }
+            //}
         }
         catch
         {
@@ -799,8 +797,7 @@ class BusScheduleOptimization
                             }
                             continue;
                         }
-
-
+                        // model.AddLinearConstraint(Google.OrTools.Sat.LinearExpr.Sum(Enumerable.Range(0, carCount[i]).Select(j => y[i, j, k, l, m])), 0, 1);
                         for (int j = 0; j < carCount[i]; j++)
                         {
                             // situation 2: cannot transfer between two vehicles
@@ -875,13 +872,13 @@ class BusScheduleOptimization
             Console.WriteLine("最优解:");
             Console.WriteLine($"最大化目标函数值 = {solver.ObjectiveValue}");
             // 输出x变量的值
-            for (int i = 0; i < busSchedule.timeInterval.Length; i++)
-            {
-                for (int j = 0; j < carCount[i]; j++)
-                {
-                    Console.WriteLine($"x{i}{j} = {solver.Value(x[i, j])}");
-                }
-            }
+            //for (int i = 0; i < busSchedule.timeInterval.Length; i++)
+            //{
+            //    for (int j = 0; j < carCount[i]; j++)
+            //    {
+            //        Console.WriteLine($"x{i}{j} = {solver.Value(x[i, j])}");
+            //    }
+            //}
         }
         else
         {
